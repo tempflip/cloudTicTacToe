@@ -59,10 +59,31 @@ const showGame = (game) => {
 	}
 };
 
+const makeMove = (i, j) => {
+	let params = {
+		id : thisGame.id,
+		player : 2,
+		move :6 
+	};
+	console.log(params);
+	let pr = new Promise((resolve, reject) => {
+		fetch(GAME_URL, {method : 'POST', body : JSON.stringify(params)}).then(r => {
+			console.log('aaa', r);
+			r.text().then(response => {
+				console.log('####', response);
+			});
+		});
+	});
+	return pr;
+};
+
 const elementClicked = (ev) => {
 	let i = ev.target.id[1];
 	let j = ev.target.id[2];
 	console.log('cl', i, j);
+	makeMove(i, j).then(r => {
+		console.log('caaaa!');
+	});
 }
 
 const initListeners = () => {
@@ -75,6 +96,7 @@ const initListeners = () => {
 
 let myParams = getQuery();
 console.log('xxx' ,myParams);
+let thisGame;
 
 let myGame;
 if (myParams.id) {
@@ -84,6 +106,7 @@ if (myParams.id) {
 }
 myGame.then(game => {
 	console.log('## myGame', game);
+	thisGame = game;
 	initListeners();
 	showGame(game);
 });
