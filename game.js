@@ -62,8 +62,8 @@ const showGame = (game) => {
 const makeMove = (i, j) => {
 	let params = {
 		id : thisGame.id,
-		player : 2,
-		move :6 
+		player : thisPlayer,
+		move : [i, j] 
 	};
 	console.log(params);
 	let pr = new Promise((resolve, reject) => {
@@ -78,8 +78,8 @@ const makeMove = (i, j) => {
 };
 
 const elementClicked = (ev) => {
-	let i = ev.target.id[1];
-	let j = ev.target.id[2];
+	let i = parseInt(ev.target.id[1]);
+	let j = parseInt(ev.target.id[2]);
 	console.log('cl', i, j);
 	makeMove(i, j).then(r => {
 		console.log('caaaa!');
@@ -97,15 +97,16 @@ const initListeners = () => {
 let myParams = getQuery();
 console.log('xxx' ,myParams);
 let thisGame;
+let thisPlayer = myParams.pl; 
 
-let myGame;
+let gamePromise;
 if (myParams.id) {
-	myGame = getGame(myParams.id);
+	gamePromise = getGame(myParams.id);
 } else {
-	myGame = newGame();
+	gamePromise = newGame();
 }
-myGame.then(game => {
-	console.log('## myGame', game);
+gamePromise.then(game => {
+	console.log('## gamePromise', game);
 	thisGame = game;
 	initListeners();
 	showGame(game);
