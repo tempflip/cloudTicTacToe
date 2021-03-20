@@ -1,4 +1,5 @@
-const GAME_URL = 'https://us-central1-tictac-306815.cloudfunctions.net/game';
+//const GAME_URL = 'https://us-central1-tictac-306815.cloudfunctions.net/game';
+const GAME_URL = 'http://localhost:8080';
 
 const getQuery = () => {
 	let [url, params] = window.location.href.split('?');
@@ -17,6 +18,7 @@ const getGame = id => {
 		fetch(GAME_URL + '?id=' + id)
 		.then(r => {
 			r.json().then(game => {
+				thisGame = game;
 				resolve(game);
 			});
 		});
@@ -26,18 +28,13 @@ const getGame = id => {
 
 const newGame = () => {
 	console.log('## create a new game');
-	let pr = new Promise((resolve, reject) => {
-		fetch(GAME_URL)
-		.then(r => {
+	fetch(GAME_URL)
+	.then(r => {
 			r.json().then(ng => {
-				getGame(ng.id)
-					.then(game => {
-						resolve(game);
-					});
+				console.log('ii', ng);
+				window.location.replace(window.location.href + '?id=' + ng.id + '&pl=1');
 			});
-		});
 	});
-	return pr;
 };
 
 const showGame = (game) => {
@@ -53,8 +50,8 @@ const showGame = (game) => {
 			if (classToAdd) {
 				document.getElementById(elId).classList.add(classToAdd);
 			}
-			console.log(i,j, elId);
-			console.log(classToAdd);
+			//console.log(i,j, elId);
+			//console.log(classToAdd);
 		}
 	}
 };
@@ -71,6 +68,7 @@ const makeMove = (i, j) => {
 			console.log('aaa', r);
 			r.text().then(response => {
 				console.log('####', response);
+				resolve();
 			});
 		});
 	});
@@ -83,6 +81,12 @@ const elementClicked = (ev) => {
 	console.log('cl', i, j);
 	makeMove(i, j).then(r => {
 		console.log('caaaa!');
+	}).then(r => {
+		console.log('nice move');
+		getGame(thisGame.id).then(r => {
+			showGame(thisGame);
+		});
+
 	});
 }
 
@@ -103,25 +107,12 @@ let gamePromise;
 if (myParams.id) {
 	gamePromise = getGame(myParams.id);
 } else {
-	gamePromise = newGame();
+	newGame();
 }
 gamePromise.then(game => {
-	console.log('## gamePromise', game);
-	thisGame = game;
+	//console.log('## gamePromise', game);
+	//thisGame = game;
 	initListeners();
 	showGame(game);
 });
 
-/*
-fetch(GAME_URL,
-	{
-		method : 'GET'
-	})
-	.then(r => {
-		r.json().then(jsonBody => {
-			console.log('###', jsonBody);
-			getGame(jsonBody.id).then(g => { console.log('$$', g)});
-		});
-
-	});
-	*/
