@@ -65,11 +65,17 @@ const makeMove = (i, j) => {
 	console.log(params);
 	let pr = new Promise((resolve, reject) => {
 		fetch(GAME_URL, {method : 'POST', body : JSON.stringify(params)}).then(r => {
-			console.log('aaa', r);
-			r.text().then(response => {
-				console.log('####', response);
-				resolve();
-			});
+			console.log('status: ', r.status);
+			if (r.ok) {
+				r.text().then(response => {
+					console.log('## API response:', response);
+					resolve();
+				});
+			} else {
+				r.text().then(response => {
+					reject(response);
+				});
+			}
 		});
 	});
 	return pr;
@@ -78,15 +84,15 @@ const makeMove = (i, j) => {
 const elementClicked = (ev) => {
 	let i = parseInt(ev.target.id[1]);
 	let j = parseInt(ev.target.id[2]);
-	console.log('cl', i, j);
+	console.log('## clicked here:', i, j);
 	makeMove(i, j).then(r => {
-		console.log('caaaa!');
-	}).then(r => {
-		console.log('nice move');
+		console.log('nice move!');
 		getGame(thisGame.id).then(r => {
 			showGame(thisGame);
 		});
 
+	}).catch(err => {
+		console.log('wrong move: ', err);
 	});
 }
 
@@ -99,7 +105,7 @@ const initListeners = () => {
 /////////////////////////////////////////////////////////////////////////////
 
 let myParams = getQuery();
-console.log('xxx' ,myParams);
+console.log('## query params:' ,myParams);
 let thisGame;
 let thisPlayer = myParams.pl; 
 

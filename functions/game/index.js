@@ -2,13 +2,11 @@ const Firestore = require('@google-cloud/firestore');
 const PRID = 'tictac-306815';
 
 const toTable = (game, n=3) => {
-	console.log(n);
 	let r = [];
 	for (var i = 0; i<n; i++) {
 		let t = [];
 		for (var j = 0; j<n; j++) {
 			t.push(game[i*3 + j] || 0);
-			console.log(i,j);
 		}
 		r.push(t);
 	}
@@ -53,12 +51,15 @@ const makeMove = (res, db, paramString) => {
 		errorResponse(res, 'no move!');
 		return;
 	}
-	//const table = {};
-	//table[move] = player;
 	db.collection('games').doc(gameId).get()  
 	.then(doc => {
 		let table = doc.data().table;
+		if (!moveAllowed(table, move, player) ) {
+			errorResponse(res, 'this move is not allowed.');
+			return;
+		}
 		table = fillTable(table, move, player);
+		console.log('# table: ', table);
 		db.collection('games').doc(gameId).update({table : table})
 			.then(doc => {
 				res.send('danke <33 ');
@@ -68,18 +69,29 @@ const makeMove = (res, db, paramString) => {
 	});
 }
 
+moveAllowed = (table, move, player) => {
+	if (table[move] === 1 || table[move] === 2) return false;
+
+	let pl1 = table.filter(el => el === 1).length;
+	let pl2 = table.filter(el => el === 2).length;
+	if (player == 1) {
+		if (pl1 == pl2) return true;
+	} else if (player == 2) {
+		if (pl2 < pl1) return true;
+	}
+	return false;
+}
 const fillTable = (table, move, player) => {
 	for (i = 0; i < move; i++) {
 		if (table[i]) continue;
 		table[i] = 0;
 	}
-	table[move] = player;
+	table[move] = parseInt(player);
 	return table;
 }
 
 const errorResponse = (res, message) => {
-		res.status = 400;
-		res.send(message);
+		res.status(400).send(message);
 }
 exports.game= (req, res) => {
 	const db = new Firestore({projectId : PRID});
